@@ -1,6 +1,7 @@
 import time
 from urllib.parse import unquote
 
+from chain_utils import ChainResult, VisitTracker, print_chain_result, print_step
 from wiki_fetcher import BASE_URL, fetch_page, get_random_wikipedia_page
 from wiki_parser import extract_first_link
 
@@ -14,69 +15,44 @@ REQUEST_DELAY = 0.1
 TEST_URL = None
 
 
-def follow_chain(start_url: str | None = TEST_URL, max_steps: int = MAX_STEPS) -> None:
-    """Start from a given (or random) page and follow first links until a cycle or dead end."""
+def follow_chain(start_url: str | None = TEST_URL, max_steps: int = MAX_STEPS) -> ChainResult:
+    """Follow first-links from *start_url* until Philosophy, a cycle, or a dead end."""
     page = fetch_page(start_url) if start_url else get_random_wikipedia_page()
-
-    visited_titles: list[str] = []  # ordered list for display
-    visited_urls: list[str] = []
-    visited_set: set[str] = set()   # for O(1) cycle detection
-
-    reason = "cutoff"
+    tracker = VisitTracker()
 
     for step in range(1, max_steps + 1):
         title = page["title"]
         url = page["url"]
 
-        # --- cycle detection ---
-        if title in visited_set:
-            reason = "cycle"
+        if tracker.has_visited(title):
             print(f"\n↻  Cycle detected at step {step}: '{title}' was already visited.\n")
-            break
+            return tracker.to_result("cycle")
 
-        visited_titles.append(title)
-        visited_urls.append(url)
-        visited_set.add(title)
+        tracker.add(title, url)
+        print_step(step, title, url)
 
-        print(f"  {step:>3}. {title}  —  {url}")
-
-        # --- extract first link ---
         href = extract_first_link(page["html"])
         if href is None:
-            reason = "dead_end"
             print(f"\n✖  Dead end at step {step}: no valid first link found.\n")
-            break
+            return tracker.to_result("dead_end")
 
         next_url = BASE_URL + href
         next_title = unquote(href.split("/wiki/")[-1]).replace("_", " ")
 
-        # --- check if the *next* page was already visited (early cycle) ---
-        if next_title in visited_set:
-            reason = "cycle"
+        if tracker.has_visited(next_title):
             print(f"\n↻  Cycle detected: step {step + 1} would be '{next_title}' (already visited).\n")
-            break
+            return tracker.to_result("cycle")
 
-        # --- check if the *next* page is Philosophy ---
         if next_url == "https://en.wikipedia.org/wiki/Philosophy":
-            visited_titles.append(next_title)
-            visited_urls.append(next_url)
-            reason = "got_to_philosophy"
+            tracker.add(next_title, next_url)
             print(f"\n🎉  Reached Philosophy at step {step + 1}!\n")
-            break
+            return tracker.to_result("got_to_philosophy")
 
         time.sleep(REQUEST_DELAY)
         page = fetch_page(next_url)
-    else:
-        print(f"\n⚠  Cutoff reached after {max_steps} steps.\n")
 
-    # --- summary ---
-    print("=" * 60)
-    print(f"  Pages visited : {len(visited_titles)}")
-    print(f"  Termination   : {reason}")
-    print("=" * 60)
-    print("\nFull chain:")
-    for i, (t, u) in enumerate(zip(visited_titles, visited_urls), 1):
-        print(f"  {i:>3}. {t}")
+    print(f"\n⚠  Cutoff reached after {max_steps} steps.\n")
+    return tracker.to_result("cutoff")
 
 
 # ---------------------------------------------------------------------------
@@ -84,4 +60,5 @@ def follow_chain(start_url: str | None = TEST_URL, max_steps: int = MAX_STEPS) -
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    follow_chain()
+    result = follow_chain()
+    print_chain_result(result)
