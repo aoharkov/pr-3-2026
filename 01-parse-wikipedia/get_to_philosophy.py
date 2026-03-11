@@ -8,10 +8,10 @@ from wiki_parser import extract_first_link
 MAX_STEPS = 100
 
 # Polite delay between requests (seconds).
-REQUEST_DELAY = 1
+REQUEST_DELAY = 0.1
 
 # Testing start page (set to None to use a random page).
-TEST_URL = "https://en.wikipedia.org/wiki/Ukraine"
+TEST_URL = None
 
 
 def follow_chain(start_url: str | None = TEST_URL, max_steps: int = MAX_STEPS) -> None:
@@ -54,6 +54,14 @@ def follow_chain(start_url: str | None = TEST_URL, max_steps: int = MAX_STEPS) -
         if next_title in visited_set:
             reason = "cycle"
             print(f"\n↻  Cycle detected: step {step + 1} would be '{next_title}' (already visited).\n")
+            break
+
+        # --- check if the *next* page is Philosophy ---
+        if next_url == "https://en.wikipedia.org/wiki/Philosophy":
+            visited_titles.append(next_title)
+            visited_urls.append(next_url)
+            reason = "got_to_philosophy"
+            print(f"\n🎉  Reached Philosophy at step {step + 1}!\n")
             break
 
         time.sleep(REQUEST_DELAY)
