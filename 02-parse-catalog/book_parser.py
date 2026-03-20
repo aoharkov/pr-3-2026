@@ -3,13 +3,14 @@ from bs4 import BeautifulSoup
 from fetcher import fetch_page
 from model.book_info import BookInfo
 
-TEST_URL = "https://vivat.com.ua/product/dykyi-zakhid-skhidnoi-yevropy/#details"
+TEST_URL = "https://vivat.com.ua/product/pryshvydshenyi-kurs-python/"
 
 
 def parse_page(url: str) -> BookInfo:
     soup = fetch_page(url)
     title = get_title_from_html(soup)
     details = get_details_from_html(soup)
+    print(".", end="", flush=True)
     return BookInfo(url=url, title=title, details=details)
 
 
@@ -19,7 +20,7 @@ def get_title_from_html(soup: BeautifulSoup) -> str:
 
 
 def get_details_from_html(soup: BeautifulSoup) -> str:
-    panel = soup.find(id="detailsPanel")
+    panel = soup.find(id="annotationPanel")
     return get_text_from_element(panel)
 
 

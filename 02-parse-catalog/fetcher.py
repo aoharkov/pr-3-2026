@@ -4,7 +4,7 @@ import requests
 from bs4 import BeautifulSoup
 
 TEST_URL = "https://vivat.com.ua/product/dykyi-zakhid-skhidnoi-yevropy/#details"
-REQUEST_DELAY = 0.1
+REQUEST_DELAY = 0.01
 
 HEADERS = {
     "User-Agent": (

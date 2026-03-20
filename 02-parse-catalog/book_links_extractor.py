@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 
 from fetcher import fetch_page
 
-TEST_URL = "https://vivat.com.ua/category/publitsystyka-ta-dokumentalistyka/"
+TEST_URL = "https://vivat.com.ua/category/it-knyhy/"
 
 
 def extract_book_links(soup: BeautifulSoup):
@@ -30,7 +30,5 @@ def extract_book_links_from_multiple_pages(base_url: str) -> list[str]:
 
 
 if __name__ == "__main__":
-    links = extract_book_links_from_multiple_pages(TEST_URL)
-    print(f"Extracted {len(links)} book links from {TEST_URL}:")
-    for link in links:
-        print(link)
+    extracted_links = extract_book_links_from_multiple_pages(TEST_URL)
+    print(f"Extracted {len(extracted_links)} book links from {TEST_URL}:")
