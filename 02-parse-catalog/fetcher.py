@@ -1,7 +1,10 @@
+from time import sleep
+
 import requests
 from bs4 import BeautifulSoup
 
 TEST_URL = "https://vivat.com.ua/product/dykyi-zakhid-skhidnoi-yevropy/#details"
+REQUEST_DELAY = 0.1
 
 HEADERS = {
     "User-Agent": (
@@ -15,6 +18,7 @@ HEADERS = {
 
 
 def fetch_page(url: str) -> BeautifulSoup:
+    sleep(REQUEST_DELAY)
     response = requests.get(url, headers=HEADERS, timeout=10)
     response.raise_for_status()
     return BeautifulSoup(response.text, "html.parser")
