@@ -6,8 +6,7 @@ TEST_URL = "https://vivat.com.ua/product/dykyi-zakhid-skhidnoi-yevropy/#details"
 
 
 def parse_page(url: str) -> dict:
-    html = fetch_page(url)
-    soup = BeautifulSoup(html, "html.parser")
+    soup = fetch_page(url)
     title = get_title_from_html(soup)
     details = get_details_from_html(soup)
     return {"url": url, "title": title, "details": details}

@@ -1,4 +1,5 @@
 import requests
+from bs4 import BeautifulSoup
 
 TEST_URL = "https://vivat.com.ua/product/dykyi-zakhid-skhidnoi-yevropy/#details"
 
@@ -13,12 +14,12 @@ HEADERS = {
 }
 
 
-def fetch_page(url: str) -> str:
+def fetch_page(url: str) -> BeautifulSoup:
     response = requests.get(url, headers=HEADERS, timeout=10)
     response.raise_for_status()
-    return response.text
+    return BeautifulSoup(response.text, "html.parser")
 
 
 if __name__ == "__main__":
-    html_content = fetch_page(TEST_URL)
-    print(f"Fetched HTML content from {TEST_URL} (length: {len(html_content)} characters)")
+    soup = fetch_page(TEST_URL)
+    print(f"Fetched HTML content from {TEST_URL} (length: {len(soup.prettify())} characters)")
